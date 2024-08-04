@@ -26,9 +26,9 @@ QCAD File Watcher is a Python script that monitors changes to a specified JavaSc
 #### 4. **Configuration:**
    - Edit `Watch-Qcad.py`:
      - Set QCAD executable path:
-       ```python
+   ```python
        LOCATION_OF_QCAD_exe = "E:\\Program Files\\QCAD\\qcad.exe"
-       ```
+   ```
 
 #### 5. **Usage:**
    - Run script in terminal:
