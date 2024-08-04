@@ -1,14 +1,44 @@
-import sys
 import os
 import time
 import subprocess
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-# settings
-LOCATION_OF_QCAD_exe = "E:\Program Files\QCAD\qcad.exe"
-# =========================================
+# Initial settings
+LOCATION_OF_QCAD_exe = "E:\\Program Files\\QCAD\\qcad.exe"
 
+# Define essential messages in a dictionary
+MESSAGES = {
+    'file_nf': "❌ Error: The file '{file_path}' does not exist. Please enter a valid path: ",
+    'js_prompt': "📋 Enter the path to the JavaScript file: ",
+    'watching': "👁️ Watching for changes in: {file_path}",
+    'stopped': "🛑 Stopped watching.",
+    'exit': "Press [Ctrl + C] to exit",
+    'launching_qcad': "⚠️ Attempting to launch QCAD executable. If you don't see the QCAD screen, please start it manually.",
+    'save_js': "💾 Save your JavaScript file to view changes.",
+    'qcad_path_prompt': "📂 QCAD executable not found at '{path}'. Please enter the path to QCAD executable: "
+}
+
+# Define developer info and related messages
+INFO = {
+    'ascii_art': """
+░██╗░░░░░░░██╗░█████╗░████████╗░█████╗░██╗░░██╗  ░██████╗░░█████╗░░█████╗░██████╗░
+░██║░░██╗░░██║██╔══██╗╚══██╔══╝██╔══██╗██║░░██║  ██╔═══██╗██╔══██╗██╔══██╗██╔══██╗
+░╚██╗████╗██╔╝███████║░░░██║░░░██║░░╚═╝███████║  ██║██╗██║██║░░╚═╝███████║██║░░██║
+░░████╔═████║░██╔══██║░░░██║░░░██║░░██╗██╔══██║  ╚██████╔╝██║░░██╗██╔══██║██║░░██║
+░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░╚█████╔╝██║░░██║  ░╚═██╔═╝░╚█████╔╝██║░░██║██████╔╝
+░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝  ░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝╚═════╝░
+    """,
+    'version': "Version: 1.5.0 🚀",
+    'dev_info': "Developer: Swastik Gupta 👨‍💻",
+    'github': "https://github.com/swas02"
+}
+
+# Define commands and paths in a dictionary
+COMMANDS = {
+    'qcad_exec': f'"{LOCATION_OF_QCAD_exe}"',
+    'run_script': ' -exec "{file_path}" -always-load-scripts'
+}
 
 class ChangeHandler(FileSystemEventHandler):
     def __init__(self, file_path):
@@ -18,84 +48,66 @@ class ChangeHandler(FileSystemEventHandler):
         self.debounce_time = 1  # seconds
 
     def on_modified(self, event):
-        current_time = time.time()
         if event.src_path == self.file_path:
-            if current_time - self.last_modified > self.debounce_time:
-                self.last_modified = current_time
-                print(f"🔄 {time.strftime('%H:%M:%S')} Re-executing: {self.file_path}")
-                subprocess.Popen( f'"{LOCATION_OF_QCAD_exe}" -exec "{sys.argv[1]}" -always-load-scripts')
-                print(f"Press [Ctrl + C] to exit")
-
+            current_time = time.strftime('%H:%M:%S')
+            current_time_seconds = time.time()
+            if current_time_seconds - self.last_modified > self.debounce_time:
+                self.last_modified = current_time_seconds
+                print(f"🔄 {current_time} Re-executing: {self.file_path}")
+                command = f'{COMMANDS["qcad_exec"]}{COMMANDS["run_script"].format(file_path=self.file_path)}'
+                subprocess.Popen(command)
+                print(MESSAGES['exit'])
 
 def print_developer_info():
     """Print developer info, ASCII art, version, etc."""
-    ascii_art = """
-░██╗░░░░░░░██╗░█████╗░████████╗░█████╗░██╗░░██╗  ░██████╗░░█████╗░░█████╗░██████╗░
-░██║░░██╗░░██║██╔══██╗╚══██╔══╝██╔══██╗██║░░██║  ██╔═══██╗██╔══██╗██╔══██╗██╔══██╗
-░╚██╗████╗██╔╝███████║░░░██║░░░██║░░╚═╝███████║  ██║██╗██║██║░░╚═╝███████║██║░░██║
-░░████╔═████║░██╔══██║░░░██║░░░██║░░██╗██╔══██║  ╚██████╔╝██║░░██╗██╔══██║██║░░██║
-░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░╚█████╔╝██║░░██║  ░╚═██╔═╝░╚█████╔╝██║░░██║██████╔╝
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝  ░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝╚═════╝░
-    """
-    version = "Version: 1.0.0 🚀"
-    developer_info = "Developer: Swastik Gupta 👨‍💻"
-    github = "https://github.com/swas02"
+    info_text = '\n'.join(f"{value}" for key, value in INFO.items())
+    print(f"{'=' * 82}\n{info_text}\n{'=' * 82}")
 
-    print("=" * 82)
-    print(ascii_art)
-    print(version)
-    print(developer_info)
-    print(github)
-    print("=" * 82)  # Just a line for visual separation
+def get_file_path(prompt):
+    """Prompt the user to enter a file path and check if it exists."""
+    file_path = input(prompt).strip()
+    while not os.path.exists(file_path):
+        file_path = input(MESSAGES['file_nf'].format(file_path=file_path)).strip()
+    return file_path
 
-
-def validate_files_and_arguments():
-    """Validate QCAD executable, JavaScript file, and command-line arguments."""
+def ensure_qcad_exe_path():
+    """Ensure the QCAD executable path is valid; prompt user if not."""
     global LOCATION_OF_QCAD_exe
+    if not os.path.exists(LOCATION_OF_QCAD_exe):
+        LOCATION_OF_QCAD_exe = input(MESSAGES['qcad_path_prompt'].format(path=LOCATION_OF_QCAD_exe)).strip()
+        while not os.path.exists(LOCATION_OF_QCAD_exe):
+            LOCATION_OF_QCAD_exe = input(MESSAGES['qcad_path_prompt'].format(path=LOCATION_OF_QCAD_exe)).strip()
 
-    # Check QCAD executable
-    while not os.path.exists(LOCATION_OF_QCAD_exe):
-        LOCATION_OF_QCAD_exe = input(
-            f"⚠️ Error: '{LOCATION_OF_QCAD_exe}' does not exist. Enter valid path: ").strip()
-
-    # Validate command-line arguments
-    if len(sys.argv) != 2:
-        print("📋 Usage: python watcher.py <path to JS file>")
-        sys.exit(1)
-
-    js_file = sys.argv[1]
-    if not os.path.exists(js_file):
-        print(f"❌ Error: The file '{js_file}' does not exist.")
-        sys.exit(1)
-
-    return js_file
-
+    COMMANDS['qcad_exec'] = f'"{LOCATION_OF_QCAD_exe}"'
 
 def main():
-    print_developer_info()  # Print developer info at the beginning
+    print_developer_info()
+    
+    ensure_qcad_exe_path()  # Ensure QCAD executable path is valid
 
-    js_file = validate_files_and_arguments()
-
-    # Define the command to run (for demonstration purposes, use an example command)
-
+    js_file = get_file_path(MESSAGES['js_prompt'])
 
     # Set up the observer and handler
     event_handler = ChangeHandler(js_file)
     observer = Observer()
-    observer.schedule(event_handler, path=os.path.dirname(
-        js_file), recursive=False)
+    observer.schedule(event_handler, path=os.path.dirname(js_file), recursive=False)
     observer.start()
-    print(f"👁️ Watching for changes in: {js_file}")
-    subprocess.Popen( f'"{LOCATION_OF_QCAD_exe}"')
+    print(MESSAGES['watching'].format(file_path=js_file))
+
+    # Notify user before launching QCAD
+    print(MESSAGES['launching_qcad'])
+    subprocess.Popen(COMMANDS['qcad_exec'], shell=True)
+
+    # Inform user to save their JS file
+    print(MESSAGES['save_js'])
 
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
         observer.stop()
-        print("🛑 Stopped watching.")
+        print(MESSAGES['stopped'])
     observer.join()
-
 
 if __name__ == "__main__":
     main()

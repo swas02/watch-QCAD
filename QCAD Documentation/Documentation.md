@@ -304,6 +304,8 @@ var rect = new RRectangle(new RVector(10, 10), new RVector(50, 50));
 addShape(rect, new RColor(255, 0, 0), "CONTINUOUS", RLineweight.Weight050);
 ```
 
+
+
 ---
 
 ### `addShapes(shapes)`
@@ -313,11 +315,56 @@ Adds the given RShapes to the drawing as new entities using current layer and at
 **Parameters:**
 - `shapes`: Array of shapes to be added.
 
-**Examples:**
+**Examples:** [_*Correction needed_]
 ```javascript
-var rect1 = new RRectangle(new RVector(10, 10), new RVector(50, 50));
-var rect2 = new RRectangle(new RVector(60, 60), new RVector(100, 100));
-addShapes([rect1, rect2]);
+// Add a Point
+addShape(new RPoint(new RVector(0, 0)));
+
+// Add a Line
+addShape(new RLine(new RVector(0, 0), new RVector(10, 10)));
+
+// Add an Arc
+addShape(new RArc(new RVector(0, 0), 10, 0, Math.PI / 2));
+
+// Add a Circle
+addShape(new RCircle(new RVector(0, 0), 10));
+
+// Add an Ellipse
+addShape(new REllipse(new RVector(0, 0), 10, 5, 0));
+
+// Add a Polyline
+addShape(new RPolyline([
+    new RVector(0, 0),
+    new RVector(10, 0),
+    new RVector(10, 10),
+    new RVector(0, 10),
+    new RVector(0, 0)
+]));
+
+// Add a Spline
+addShape(new RSpline([
+    new RVector(0, 0),
+    new RVector(5, 10),
+    new RVector(10, 0)
+]));
+
+// Add a Triangle (as a Polyline with 3 vertices)
+addShape(new RPolyline([
+    new RVector(0, 0),
+    new RVector(10, 0),
+    new RVector(5, 10),
+    new RVector(0, 0)
+]));
+
+// Add an XLine
+addShape(new RXLine(new RVector(0, 0), new RVector(1, 1)));
+
+// Add a Ray
+addShape(new RRay(new RVector(0, 0), new RVector(1, 1)));
+
+// Add a Line with custom color, linetype, and lineweight
+addShape(new RLine(new RVector(0, 0), new RVector(10, 10)), new RColor(255,0,0), "CONTINUOUS", 0.05);
+
 ```
 
 ---
@@ -841,36 +888,42 @@ string userInput = getText("Input Required", "Enter your name:", "Default Name")
 Certainly! Here’s a documentation example for the `saveDocument()` function you provided. This documentation includes an overview, description of parameters, return values, and usage examples.
 
 ---
+## Save Document in QCAD
 
-### `saveDocument()`
+This document provides details on how to use the `Save` action in QCAD to save a document programmatically. The provided code snippet demonstrates how to create a `Save` action, specify the file path, format version, and handle file overwriting.
 
+## Code Overview
 
-
-The `saveDocument()` function allows users to save the currently open document in QCAD to a file specified through a file dialog. This function handles user interactions for file saving, including opening a save file dialog and providing feedback on the save operation's success or failure.
-
-### Parameters
-
-This function does not take any parameters.
-
-### Return Value
-
-The function does not return a value. Instead, it provides feedback to the user through `EAction.handleUserMessage()` indicating whether the file was saved successfully, if there was an error, or if the save operation was canceled.
-
-### Example
+The code snippet demonstrates the following steps:
+1. **Creating a Save Action**
+2. **Specifying File Details**
+3. **Saving the Document**
 
 ```javascript
-// Call the saveDocument function to save the current document
-saveDocument();
+// Create an instance of the Save action
+var saveAction = new Save();
+
+// Specify the path where the file should be saved
+var fileName = "path/to/your/file.dxf"; // Replace with the actual file path
+
+// Specify the file format version (e.g., AutoCAD 2013)
+// This can be adjusted based on the desired format compatibility
+var fileVersion = "AutoCAD 2013";
+
+// Enable or disable overwrite warnings
+// `true` means that if a file already exists at the specified path,
+// the user will be prompted to confirm overwriting
+var overwriteWarning = true;
+
+// Call the save method to save the document
+// Parameters:
+// - `fileName`: The path and name of the file to save
+// - `fileVersion`: The file format version to use
+// - `overwriteWarning`: Whether to show warnings about overwriting existing files
+var success = saveAction.save(fileName, fileVersion, overwriteWarning);
+
+// `success` will be `true` if the save operation was successful, `false` otherwise
 ```
-
-In this example, invoking `saveDocument()` will prompt the user with a file dialog to choose a location and filename for the document. If the save operation is successful, the user will receive a success message; if not, they will be informed of the error.
-
-### Error Handling
-
-- **No Document Open**: If no document is currently open, the function informs the user with the message "No document open."
-- **Save Operation Failure**: If the document fails to save, the function informs the user with the message "Error saving file."
-- **Save Operation Cancelled**: If the user cancels the save operation, the function informs the user with the message "Save cancelled."
-
 ---
 
 ## Sample Script
@@ -898,8 +951,18 @@ addSimpleText("Sample Text", [10, 90], 5, 0, "Arial", RS.VAlignTop, RS.HAlignLef
 // End the transaction
 endTransaction();
 
-// Save the document
-saveDocument();
+// Initialize Save action
+var saveAction = new Save();
+
+// Define the file path and other parameters
+var fileName = "path/file2.dxf";
+var fileVersion = ""; // Use empty string to let QCAD decide the format
+var overwriteWarning = true; // Show overwrite warning if file exists
+
+// Attempt to save the document
+var success = saveAction.save(fileName, fileVersion, overwriteWarning);
+
+
 ```
 
 This script demonstrates the creation of a new document, adding layers, setting colors, drawing entities, and updating the user interface. Adjust the parameters and functions to fit your specific drawing needs.
